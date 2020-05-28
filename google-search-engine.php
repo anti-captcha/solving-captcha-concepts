@@ -37,7 +37,7 @@ $submitPageContent = request($redirect,
                   NULL,
                   NULL,
                   $cookiefile,
-                  "172.93.142.32:3128",
+                  $failingProxy,
                   NULL,
                   true);
 

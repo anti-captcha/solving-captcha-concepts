@@ -34,7 +34,7 @@ const password = 'my strong password';
     await tab.setViewport({ width: 1360, height: 1000 });
 
     console.log('opening target page ..');
-    await tab.goto('https://anti-captcha.com/demo?page=recaptcha_v2_callback', { waitUntil: "networkidle0" });
+    await tab.goto('https://anti-captcha.com/demo/?page=recaptcha_v2_callback', { waitUntil: "networkidle0" });
 
     console.log('filling login input ..');
     await tab.$eval('#login', (element, login) => {

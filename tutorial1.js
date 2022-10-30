@@ -15,7 +15,7 @@ const password = 'my strong password';
 (async () => {
 
     console.log('solving recaptcha ...');
-    let token = await ac.solveRecaptchaV2Proxyless('https://anti-captcha.com/tutorials?page=recaptcha_v2_textarea', '6LfydQgUAAAAAMuh1gRreQdKjAop7eGmi6TrNIzp');
+    let token = await ac.solveRecaptchaV2Proxyless('https://anti-captcha.com/demo/?page=recaptcha_v2_textarea', '6LfydQgUAAAAAMuh1gRreQdKjAop7eGmi6TrNIzp');
     if (!token) {
         console.log('something went wrong');
         return;
@@ -31,7 +31,7 @@ const password = 'my strong password';
     await tab.setViewport({ width: 1360, height: 1000 });
 
     console.log('opening target page ..');
-    await tab.goto('https://anti-captcha.com/tutorials?page=recaptcha_v2_textarea', { waitUntil: "networkidle0" });
+    await tab.goto('https://anti-captcha.com/demo/?page=recaptcha_v2_textarea', { waitUntil: "networkidle0" });
 
     console.log('filling login input ..');
     await tab.$eval('#contentbox > form > div > div:nth-child(1) > span > input', (element, login) => {

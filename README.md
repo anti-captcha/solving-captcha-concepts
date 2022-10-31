@@ -6,7 +6,7 @@ Demonstration concepts for different websites.
 3. [tutorial2.js](https://github.com/AdminAnticaptcha/solving-captcha-concepts/blob/master/tutorial2.js) : [Bypass Recaptcha on a form with a callback](https://anti-captcha.com/tutorials/submit-form-with-recaptcha-using-callback-function), showing how to bypass Recaptcha setup with a callback function.
 4. [tutorial3.js](https://github.com/AdminAnticaptcha/solving-captcha-concepts/blob/master/tutorial3.js) : [Bypass Recaptcha with anonymous callback function](https://anti-captcha.com/tutorials/recaptcha-with-anonymous-callback-function), demonstrates how to bypass Recaptcha setup with an anonymous callback function.
 5. [tutorial5.py](https://github.com/AdminAnticaptcha/solving-captcha-concepts/blob/master/tutorial5.py) : [Learn how to submit a form with an image captcha using Python](https://anti-captcha.com/tutorials/how-to-bypass-image-captcha).
-6. [tutorial6.js](https://github.com/AdminAnticaptcha/solving-captcha-concepts/blob/master/tutorial6.js) : [Learn how to bypass Recaptcha V3](https://docker.anti-captcha.com/tutorials/how-to-bypass-recaptcha-v3).
+6. [tutorial6.js](https://github.com/AdminAnticaptcha/solving-captcha-concepts/blob/master/tutorial6.js) : [Learn how to bypass Recaptcha V3](https://anti-captcha.com/tutorials/how-to-bypass-recaptcha-v3).
 
 
 

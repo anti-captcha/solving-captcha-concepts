@@ -1,63 +1,82 @@
+/*
+
+ChatGPT prompt:
+
+There's a form at https://anti-captcha.com/demo/?page=recaptcha_v2_textarea with text inputs "login", "pass" and recaptcha v2 widget
+which has its token stored in hidden input with name "g-recaptcha-response". The form submits POST request to address https://anti-captcha.com/demo/submit1.php .
+If the captcha is solved successfully, then page outputs "Recaptcha test passed" text, if not, then "Captcha test not passed".
+Recaptcha V2 has sitekey "6LfydQgUAAAAAMuh1gRreQdKjAop7eGmi6TrNIzp".
+Write code which uses Anti-Captcha npm library to solve Recaptcha V2 and then submits token and form data.
+
+Here's the example for solving Recaptcha v2 with Anti-Captcha:
+
 //npm install @antiadmin/anticaptchaofficial
-//npm install puppeteer
+//https://github.com/anti-captcha/anticaptcha-npm
 
 const ac = require("@antiadmin/anticaptchaofficial");
-const pup = require("puppeteer");
 
-ac.setAPIKey('YOUR_API_KEY');
-ac.getBalance()
-    .then(balance => console.log('my balance is: '+balance))
-    .catch(error => console.log('an error with API key: '+error));
+//set API key
+ac.setAPIKey('YOUR_API_KEY_HERE');
 
-const login = 'mylogin';
-const password = 'my strong password';
+//Specify softId to earn 10% commission with your app.
+//Get your softId here: https://anti-captcha.com/clients/tools/devcenter
+ac.setSoftId(0);
 
-(async () => {
+//set optional custom parameter which Google made for their search page Recaptcha v2
+//ac.settings.recaptchaDataSValue = '"data-s" token from Google Search results "protection"'
 
-    console.log('solving recaptcha ...');
-    let token = await ac.solveRecaptchaV2Proxyless('https://anti-captcha.com/demo/?page=recaptcha_v2_textarea', '6LfydQgUAAAAAMuh1gRreQdKjAop7eGmi6TrNIzp');
-    if (!token) {
-        console.log('something went wrong');
-        return;
-    }
+ac.solveRecaptchaV2Proxyless('http://DOMAIN.COM', 'WEBSITE_KEY')
+    .then(gresponse => {
+        console.log('g-response: '+gresponse);
+        console.log('google cookies:');
+        console.log(ac.getCookies());
+    })
+    .catch(error => console.log('test received error '+error));
 
-    console.log('opening browser ..');
-    const browser = await pup.launch();
 
-    console.log('creating new tab ..');
-    const tab = await browser.newPage();
+And here's the curl representation of POST request of the form. Rewrite it in javascript:
 
-    console.log('changing window size .. ');
-    await tab.setViewport({ width: 1360, height: 1000 });
+*/
 
-    console.log('opening target page ..');
-    await tab.goto('https://anti-captcha.com/demo/?page=recaptcha_v2_textarea', { waitUntil: "networkidle0" });
 
-    console.log('filling login input ..');
-    await tab.$eval('#contentbox > form > div > div:nth-child(1) > span > input', (element, login) => {
-        element.value = login;
-    }, login);
+const axios = require('axios');
+const ac = require('@antiadmin/anticaptchaofficial');
 
-    console.log('filling password input');
-    await tab.$eval('#contentbox > form > div > div:nth-child(2) > span > input', (element, password) => {
-        element.value = password;
-    }, password);
+// Set your Anti-Captcha API key
+ac.setAPIKey('API_KEY_HERE');
 
-    console.log('setting recaptcha g-response ...');
-    await tab.$eval('#g-recaptcha-response', (element, token) => {
-        element.value = token;
-    }, token);
+// Solve Recaptcha V2
+ac.solveRecaptchaV2Proxyless('https://anti-captcha.com/demo/?page=recaptcha_v2_textarea', '6LfydQgUAAAAAMuh1gRreQdKjAop7eGmi6TrNIzp')
+    .then(recaptchaToken => {
+        console.log('Recaptcha token:', recaptchaToken);
 
-    console.log('submitting form .. ');
-    await Promise.all([
-        tab.click('#contentbox > form > div > div.tac.padding20px > button'),
-        tab.waitForNavigation({ waitUntil: "networkidle0" })
-    ]);
+        // Submit form data with Recaptcha token
+        const formData = {
+            login: 'test', // Replace with actual login data
+            pass: 'test', // Replace with actual password data
+            'g-recaptcha-response': recaptchaToken
+        };
 
-    console.log('making a screenshot ...');
-    await tab.screenshot({ path: 'screenshot.png' });
+        const headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Referer': 'https://anti-captcha.com/demo/?page=recaptcha_v2_textarea',
+            // Add any other necessary headers from your curl command
+        };
 
-    console.log('closing browser .. ');
-    await browser.close();
-
-})();
+        axios.post('https://anti-captcha.com/demo/submit1.php', formData, { headers })
+            .then(response => {
+                console.log('Response from server:', response.data);
+                // Check if Recaptcha test passed or failed based on response
+                if (response.data.includes('Recaptcha test passed')) {
+                    console.log('Recaptcha test passed!');
+                } else {
+                    console.log('Recaptcha test failed.');
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting form:', error);
+            });
+    })
+    .catch(error => {
+        console.error('Error solving Recaptcha:', error);
+    });

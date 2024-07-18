@@ -13,7 +13,10 @@ async function main() {
     //set optional custom parameter which Google made for their search page Recaptcha v2
     //ac.settings.recaptchaDataSValue = '"data-s" token from Google Search results "protection"'
 
-    const token = await ac.solveRecaptchaV2Proxyless('https://anti-captcha.com/demo/?page=recaptcha_v2_anonymous_callback', '6LdsBtAZAAAAAKD3r6e3kb4gclEXjpBXky65UbOP')
+    const token = await ac.solveRecaptchaV3('https://anti-captcha.com/demo/?page=recaptcha_v3_submit_03',
+        '6LcBXcwZAAAAAC93rrscdoOawWRCm2MI5uFg2_Gt',
+        0.9, //minimum score required: 0.3, 0.7 or 0.9
+        'test')
     console.log('solved token:', token)
 
     // Launch a headless browser
@@ -39,36 +42,34 @@ async function main() {
     });
 
     // Navigate to the desired page
-    await page.goto('https://anti-captcha.com/demo/?page=recaptcha_v2_anonymous_callback', {
+    await page.goto('https://anti-captcha.com/demo/?page=recaptcha_v3_submit_03', {
         waitUntil: "domcontentloaded"
     }); // Replace with the URL you want to navigate to
 
 
-    await page.evaluate(() => {
+    await page.evaluate((token) => {
         // Replacement for grecaptcha
         window['grecaptcha'] = {
-            render: function(container, parameters) {
-                console.log(`called render function with container ${container} and parameters`, parameters)
+            execute: function(sitekey, parameters) {
+                console.log(`called execute function with sitekey ${sitekey} and parameters`, parameters)
 
-                // Accept parameters and save callback to our own place
-                window['callbackCopy'] = parameters.callback;
+                return new Promise(resolve => resolve(token))
+
+            },
+            ready: function(callback) {
+                callback();
             }
         }
-    })
+    }, token)
 
 
     console.log('page loaded, filling inputs');
 
     // Fill input fields
-    await page.type('#login', 'the login', {delay: 500})
-    await page.type('#pass', 'a password', {delay: 100})
+    await page.type('#message', 'the message', {delay: 100})
 
-    console.log('submitting token..')
-    // Call the injected function on the page
-    await page.evaluate((token) => {
-        // Call the function with a specific token
-        window['callbackCopy'](token);
-    }, token); // Replace 'sometoken' with the actual token you want to pass
+    console.log('submitting form..')
+    await page.click('#contentbox > div > div > div.tac.padding20px > button');
 
     await new Promise(resolve => setTimeout(resolve, 5000));
 

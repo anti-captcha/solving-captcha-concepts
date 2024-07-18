@@ -1,61 +1,83 @@
-//npm install @antiadmin/anticaptchaofficial
-//npm install puppeteer
-
+const puppeteer = require('puppeteer');
 const ac = require("@antiadmin/anticaptchaofficial");
-const pup = require("puppeteer");
 
-ac.setAPIKey('API_KEY_HERE');
-ac.getBalance()
-    .then(balance => console.log('my balance is: '+balance))
-    .catch(error => console.log('an error with API key: '+error));
+async function main() {
 
-const login = 'mylogin';
-const password = 'my strong password';
+    //set API key
+    ac.setAPIKey('API_KEY_HERE');
 
-(async () => {
+    //Specify softId to earn 10% commission with your app.
+    //Get your softId here: https://anti-captcha.com/clients/tools/devcenter
+    ac.setSoftId(0);
 
-    // anchor URL, we use sitekey from here:
-    // https://www.google.com/recaptcha/api2/anchor?ar=1&k=6LctBtAZAAAAANJDH7_ArYcwy0MxIfyfeMuZ5ywk&co=aHR0cHM6Ly9kb2NrZXIDKLEK41jYXB0Y2hhLmNvbTo0NDM.&hl=en&v=zmiYzsHiD3NTJBWt2QZC9aM5&size=normal&cb=be6fnap1p26e
+    //set optional custom parameter which Google made for their search page Recaptcha v2
+    //ac.settings.recaptchaDataSValue = '"data-s" token from Google Search results "protection"'
 
-    console.log('solving recaptcha ...');
-    let token = await ac.solveRecaptchaV2Proxyless('https://anti-captcha.com/demo?page=recaptcha_v2_callback', '6LctBtAZAAAAANJDH7_ArYcwy0MxIfyfeMuZ5ywk');
-    if (!token) {
-        console.log('something went wrong');
-        return;
+    const token = await ac.solveRecaptchaV2Proxyless('https://anti-captcha.com/demo/?page=recaptcha_v2_callback', '6LctBtAZAAAAANJDH7_ArYcwy0MxIfyfeMuZ5ywk')
+    console.log('solved token:', token)
+
+    // Launch a headless browser
+    const browser = await puppeteer.launch({ 
+        headless: "new" 
+    }); // set headless to false to see the browser in action
+
+    // Open a new page
+    const page = await browser.newPage();
+
+    // Navigate to the desired page
+    await page.goto('https://anti-captcha.com/demo/?page=recaptcha_v2_callback', {
+        waitUntil: "networkidle2"
+    }); // Replace with the URL you want to navigate to
+    console.log('page loaded, filling inputs');
+
+    // Fill input fields
+    await page.type('#login', 'the login', {delay: 500})
+    await page.type('#pass', 'a password', {delay: 100})
+
+    console.log('submitting token..')
+    // Call the injected function on the page
+    await page.evaluate((token) => {
+        // Call the function with a specific token
+        window.checkCaptcha(token);
+    }, token); // Replace 'sometoken' with the actual token you want to pass
+
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
+    // Extract all text content from the page
+    const allTextContent = await page.evaluate(() => {
+        // Get all text nodes
+        const elements = document.querySelectorAll('*');
+        const texts = [];
+
+        // Iterate through all elements to extract text content
+        elements.forEach(element => {
+            const elementText = element.textContent.trim();
+            if (elementText.length > 0) {
+                texts.push(elementText);
+            }
+        });
+
+        return texts.join('\n');
+    });
+
+    // Log or process the extracted text content
+    console.log(allTextContent);
+
+    if (allTextContent.includes('Recaptcha test passed')) {
+        console.log('Recaptcha test passed!');
+    } else {
+        console.log('Recaptcha test failed.');
     }
 
-    console.log('opening browser ..');
-    const browser = await pup.launch({ headless: false });
+    // Wait for some time (for demonstration purposes)
+    await new Promise(resolve => setTimeout(resolve, 15000));
 
-    console.log('creating new tab ..');
-    const tab = await browser.newPage();
+    // Close the browser
+    await browser.close();
+}
 
-    console.log('changing window size .. ');
-    await tab.setViewport({ width: 1360, height: 1000 });
-
-    console.log('opening target page ..');
-    await tab.goto('https://anti-captcha.com/demo/?page=recaptcha_v2_callback', { waitUntil: "networkidle0" });
-
-    console.log('filling login input ..');
-    await tab.$eval('#login', (element, login) => {
-        element.value = login;
-    }, login);
-
-    console.log('filling password input');
-    await tab.$eval('#pass', (element, password) => {
-        element.value = password;
-    }, password);
-
-    console.log('setting recaptcha g-response ...');
-    await tab.evaluate((token) => {
-        checkCaptcha(token);
-    }, token);
-
-
-    console.log('making a screenshot ...');
-    await tab.screenshot({ path: 'screenshot.png' });
-
-    // console.log('closing browser .. ');
-    // await browser.close();
-
+// Run the main function
+(async() => {
+    main();
 })();
+
